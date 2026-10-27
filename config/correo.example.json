@@ -1,0 +1,16 @@
+{
+  "enviar": true,
+  "asunto": "Reporte cargas marcador {periodo}",
+  "para": [
+    "persona1@conexionesdigitalesbpo.com"
+  ],
+  "cc": [],
+  "cco": [],
+  "adjuntar_excel": true,
+  "alertas": {
+    "prom_intentos_hist_alto": 4,
+    "pct_avance_hist_bajo": 30,
+    "dias_minimos_poco_tocada": 2,
+    "registros_minimos": 100
+  }
+}

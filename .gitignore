@@ -1,0 +1,11 @@
+.env
+__pycache__/
+*.pyc
+.venv/
+venv/
+salidas/
+logs/
+.pytest_cache/
+msal_cache.bin
+*.bin
+config/correo.json
