@@ -142,6 +142,9 @@ def _mysql_seguro(accion, mysql, avisos: list[str], que: str):
     if not mysql:
         return None
     try:
+        # La conexión queda quieta mientras se leen los marcadores y la red la
+        # puede cortar por inactividad: se verifica y reconecta antes de usarla.
+        mysql.ping(reconnect=True)
         return accion()
     except Exception:
         log.exception("MySQL falló al %s; el reporte continúa", que)

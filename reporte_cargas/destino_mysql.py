@@ -6,6 +6,7 @@ con ese id_ejecucion. Nunca se borra nada: las vistas v_*_vigente eligen la
 """
 
 import logging
+import os
 import socket
 from datetime import date, datetime
 
@@ -20,10 +21,14 @@ TABLA_RESUMEN = "rpt_cargas_marcacion_diaria"
 TABLA_ESTADOS = "rpt_cargas_resultados_diaria"
 TABLA_ESTADOS_HIST = "rpt_cargas_resultados_hist"
 
+MAX_SENTENCIA_BYTES = int(os.getenv("MYSQL_MAX_SENTENCIA_BYTES", "1200"))
+
 
 def conectar(c: ConexionMysql):
+    # Timeouts para que un corte de red no deje la corrida colgada
     return pymysql.connect(host=c.host, port=c.port, database=c.db, user=c.user,
-                           password=c.password, charset="utf8mb4", autocommit=False)
+                           password=c.password, charset="utf8mb4", autocommit=False,
+                           connect_timeout=15, read_timeout=60, write_timeout=60)
 
 
 def iniciar_ejecucion(conn, marcador: str, desde: date, hasta: date, origen: str) -> int:
@@ -51,6 +56,9 @@ def guardar(conn, id_ejecucion: int, resumen: list[dict], estados: list[dict],
     cols_estados = ["id_ejecucion"] + [col for col, _ in COLUMNAS_ESTADOS]
     try:
         with conn.cursor() as cur:
+            # Por la VPN, paquetes de más de ~1.300 bytes hacia el MySQL se pierden
+            # sin aviso: executemany parte los inserts en sentencias de este tamaño.
+            cur.max_stmt_length = MAX_SENTENCIA_BYTES
             for tabla, columnas, filas in ((TABLA_RESUMEN, cols_resumen, resumen),
                                            (TABLA_ESTADOS, cols_estados, estados),
                                            (TABLA_ESTADOS_HIST, cols_estados, estados_hist)):
